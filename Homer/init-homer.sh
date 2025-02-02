@@ -15,6 +15,18 @@ if ! psql -h postgresql_cloudt -U homer_user -lqt | cut -d \| -f 1 | grep -qw ho
     homer-app -create-table-db-config 
     homer-app -populate-table-db-config 
     homer-app -upgrade-table-db-config 
+    homer-app -update-ui-user=admin -update-ui-password=homer
 fi
 
-exec heplify-server -config /etc/heplify-server/heplify-server.toml
+
+homer-app -show-db-users -database-root-user=homer_user -database-host=postgresql_cloudt -database-root-password=homer
+
+# Start heplify-server and homer-app in the background
+heplify-server -config /etc/heplify-server/heplify-server.toml &
+HEPLIFY_PID=$!
+
+homer-app &
+HOMER_PID=$!
+
+# Wait for both processes to finish
+wait $HEPLIFY_PID $HOMER_PID

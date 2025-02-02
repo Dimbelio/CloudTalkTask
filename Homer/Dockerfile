@@ -18,6 +18,7 @@ RUN chmod +x /usr/local/bin/init-homer.sh
 
 # Expose Homer port
 EXPOSE 9060
+EXPOSE 9080
 
 # Set the entrypoint script as the default command
 ENTRYPOINT ["init-homer.sh"]

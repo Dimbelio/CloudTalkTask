@@ -20,7 +20,7 @@ docker_run_args := --network ${network} -d \
 all: build
 
 clean:
-	-docker rmi -f $(main_image)
+	-docker rmi -f $(main_image) && docker rm ${container_name}
 
 push:
 	docker push $(main_image)
