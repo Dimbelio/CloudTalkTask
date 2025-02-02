@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: ./PostgreSQL
+      dockerfile: Dockerfile
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  homer:
+    build:
+      context: ./Homer
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: homer_user
+      POSTGRES_PASSWORD: homer
+    ports:
+      - "9060:9060"
+    command: ["/usr/local/bin/init-homer.sh"]
+
+volumes:
+  postgres_data:

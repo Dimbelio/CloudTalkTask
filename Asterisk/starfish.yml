@@ -1,0 +1,176 @@
+- hosts: starfish
+  become: yes
+  vars:
+    current_mysql_root_password: ""
+    updated_mysql_root_password: "root"
+    current_mysql_asterisk_password: ""
+    updated_mysql_asterisk_password: "root"
+
+  tasks:
+    - name: Import MySQL APT repository GPG key
+      apt_key:
+        url: "https://repo.mysql.com/RPM-GPG-KEY-mysql"
+        state: present
+
+    - name: Install the MySQL APT repository on Debian
+      apt_repository:
+        repo: "deb http://repo.mysql.com/apt/debian/ {{ ansible_distribution_release | lower }} mysql-apt-config"
+        state: present
+        update_cache: yes
+
+    - name: Install MySQL server (or any other MySQL package)
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Override variables for MySQL (Debian).
+      set_fact:
+        mysql_daemon: mysql
+        mysql_packages: ['mysql-server']
+        mysql_log_error: /var/log/mysql/error.log
+        mysql_syslog_tag: mysql
+        mysql_pid_file: /var/run/mysqld/mysqld.pid
+        mysql_socket: /var/lib/mysql/mysql.sock
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure MySQL server is running
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: update mysql root pass for localhost root account from local servers
+      mysql_user:
+        login_user: root
+        login_password: "{{ current_mysql_root_password }}"
+        name: root
+        host: "{{ item }}"
+        password: "{{ updated_mysql_root_password }}"
+      with_items:
+        - localhost
+
+    - name: update mysql root password for all other local root accounts
+      mysql_user:
+        login_user: root
+        login_password: "{{ updated_mysql_root_password }}"
+        name: root
+        host: "{{ item }}"
+        password: "{{ updated_mysql_root_password }}"
+      with_items:
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost.localdomain
+
+    - name: create asterisk database
+      mysql_db:
+        login_user: root
+        login_password: "{{ updated_mysql_root_password }}"
+        name: asterisk
+        state: present
+
+    - name: asterisk mysql user
+      mysql_user:
+        login_user: root
+        login_password: "{{ updated_mysql_root_password }}"
+        name: asterisk
+        host: "{{ item }}"
+        password: "{{ updated_mysql_asterisk_password }}"
+        priv: "asterisk.*:ALL"
+      with_items:
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+        - localhost.localdomain
+
+    - name: remove anonymous user
+      mysql_user:
+        login_user: root
+        login_password: "{{ updated_mysql_root_password }}"
+        name: ""
+        state: absent
+        host: "{{ item }}"
+      with_items:
+        - localhost
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost.localdomain
+
+    - name: remove test database
+      mysql_db:
+        login_user: root
+        login_password: "{{ updated_mysql_root_password }}"
+        name: test
+        state: absent
+
+    - user:
+        name: asterisk
+        state: present
+        createhome: yes
+
+    - group:
+        name: asterisk
+        state: present
+
+    - user:
+        name: astmin
+        groups: asterisk,wheel
+        state: present
+
+    - name: Install other dependencies on Debian
+      apt:
+        name:
+          - unixodbc
+          - unixodbc-dev
+          - libmyodbc
+          - python3-mysqldb
+          - tcpdump
+          - ntp
+          - ntpdate
+          - jansson
+          - dnsutils
+        state: present
+
+    - name: Ensure firewall allows UDP port 5060 for SIP
+      ufw:
+        rule: allow
+        name: 'SIP'
+        port: '5060'
+        proto: udp
+
+    - name: Ensure firewall allows UDP port range for RTP
+      ufw:
+        rule: allow
+        name: 'RTP'
+        port: '10000:20000'
+        proto: udp
+
+    - name: Ensure NTP is running
+      service:
+        name: ntpd
+        state: started
+        enabled: yes
+
+    - name: update odbcinst.ini
+      lineinfile:
+        dest: /etc/odbcinst.ini
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^Driver64"
+          line: "Driver64 = /usr/lib/x86_64-linux-gnu/libmyodbc8a.so"
+        - regexp: "^Setup64"
+          line: "Setup64 = /usr/lib/x86_64-linux-gnu/libodbcmyS.so"
+
+    - name: create odbc.ini
+      blockinfile:
+        path: /etc/odbc.ini
+        create: yes
+        block: |
+          [asterisk]
+          Driver = MySQL
+          Description = MySQL connection to 'asterisk' database
+          Server = localhost

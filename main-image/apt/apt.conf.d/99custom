@@ -1,0 +1,16 @@
+Acquire::http::Timeout "10";
+Acquire::ftp::Timeout "10";
+Acquire::Retries "5";
+
+APT::Install-Suggests "false";
+APT::Install-Recommends "false";
+
+# This is is required so that the snapshot repository won't be considered expired by apt-get.
+Acquire::Check-Valid-Until "false";
+
+# Avoid using apt-get -y
+APT::Get::Assume-Yes "true";
+
+
+
+
