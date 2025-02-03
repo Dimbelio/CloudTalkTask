@@ -61,11 +61,12 @@ services:
 # Define the network
 networks:
   sip-network:
+    name: sip-network
     ipam:
       config:
         - subnet: 172.16.0.0/24
     driver: bridge
-
+    
 # Define the volume for PostgreSQL
 volumes:
   postgres_cloudt:
