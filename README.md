@@ -46,6 +46,7 @@ Before you begin, ensure you have the following installed:
    ```bash
    git clone https://github.com/Dimbelio/CloudTalkTask.git
    cd CloudTalkTask
+   make build-main-image
    make build
    make run 
 

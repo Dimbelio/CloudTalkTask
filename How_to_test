@@ -1,2 +1,0 @@
-psql -U homer_user -d homer_data -c "\dt"
-psql -U asterisk -d asterisk -c "\dt"
