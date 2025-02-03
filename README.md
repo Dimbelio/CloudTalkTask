@@ -36,7 +36,7 @@ This project is ideal for testing, development, and learning about SIP-based com
 Before you begin, ensure you have the following installed:
 - **Docker**: [Install Docker](https://docs.docker.com/get-docker/)
 - **Docker Compose**: [Install Docker Compose](https://docs.docker.com/compose/install/)
-- **CMake**: [Install CMake](https://cmake.org/download/)
+- **Make**: [Install Make](https://www.gnu.org/software/make/)
 - **Git**: [Install Git](https://git-scm.com/downloads)
 
 ---
@@ -128,4 +128,4 @@ The following services are included in this project:
 
 ## Contact  
 For questions or feedback, please contact:  
-- **Your Name**: Ivan Hristov [hristowivan@gmail.com](mailto:your-email@example.com)  
+- **Ivan Hristov**: [hristowivan@gmail.com](mailto:your-email@example.com)  
