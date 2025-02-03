@@ -28,14 +28,7 @@ RUN curl -LO https://github.com/SIPp/sipp/releases/download/v3.7.1/sipp-3.7.1.ta
     make && \
     make install
 
-    # ./configure && \
-    # make && \
-    # make install && \
-    # cd .. && \
-    # rm -rf sipp-3.7.1*
-
 WORKDIR /sipp
-COPY run_scripts run_scripts
 COPY tests tests
 
 CMD ["/sbin/init"]
