@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-sleep 3
+sleep 5
 # Wait for PostgreSQL to be ready
 until pg_isready -h postgresql_cloudt -U homer_user; do
     echo "Waiting for PostgreSQL to start..."
