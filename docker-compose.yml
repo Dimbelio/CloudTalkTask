@@ -1,70 +1,70 @@
-version: '3.8'
+  version: '3.8'
 
-services:
-  # 1. Build the main-image
-  main-image:
-    build:
-      context: ./main-image
-    image: main-image:red
-    container_name: main-image
-    profiles:
-      - main-image  # This service will only run if the "main-image" profile is enabled
+  services:
+    # 1. Build the main-image
+    main-image:
+      build:
+        context: ./main-image
+      image: main-image:red
+      container_name: main-image
+      profiles:
+        - main-image  # This service will only run if the "main-image" profile is enabled
 
-  # 2. Build and run PostgreSQL
-  postgresql_cloudt:
-    build:
-      context: ./PostgreSQL
-    image: postgresql:latest
-    container_name: postgresql_cloudt
-    networks:
-      sip-network:
-        ipv4_address: 172.16.0.20
-    volumes:
-      - postgres_cloudt:/var/lib/postgresql/data
+    # 2. Build and run PostgreSQL
+    postgresql_cloudt:
+      build:
+        context: ./PostgreSQL
+      image: postgresql:latest
+      container_name: postgresql_cloudt
+      networks:
+        sip-network:
+          ipv4_address: 172.16.0.20
+      volumes:
+        - postgres_cloudt:/var/lib/postgresql/data
 
-  # 3. Build and run Asterisk
-  asterisk_cloudt:
-    build:
-      context: ./Asterisk
-    image: asterisk:latest
-    container_name: asterisk_cloudt
-    networks:
-      sip-network:
-        ipv4_address: 172.16.0.30
-    depends_on:
-      - postgresql_cloudt
+    # 3. Build and run Asterisk
+    asterisk_cloudt:
+      build:
+        context: ./Asterisk
+      image: asterisk:latest
+      container_name: asterisk_cloudt
+      networks:
+        sip-network:
+          ipv4_address: 172.16.0.30
+      depends_on:
+        - postgresql_cloudt
+        - homer_cloudt
 
-  # 4. Build and run Homer
-  homer_cloudt:
-    build:
-      context: ./Homer
-    image: homer:latest
-    container_name: homer_cloudt
-    networks:
-      sip-network:
-        ipv4_address: 172.16.0.40
-    depends_on:
-      - asterisk_cloudt
-      - postgresql_cloudt
+    # 4. Build and run Homer
+    homer_cloudt:
+      build:
+        context: ./Homer
+      image: homer:latest
+      container_name: homer_cloudt
+      networks:
+        sip-network:
+          ipv4_address: 172.16.0.40
+      depends_on:
+        - postgresql_cloudt
 
 
-  # 5. Build and run SIPp
-  sipp_cloudt:
-    build:
-      context: ./sipp
-    image: sipp:latest
-    container_name: sipp_cloudt
-    networks:
-      sip-network:
-        ipv4_address: 172.16.0.50
+    # 5. Build and run SIPp
+    sipp_cloudt:
+      build:
+        context: ./sipp
+      image: sipp:latest
+      container_name: sipp_cloudt
+      networks:
+        sip-network:
+          ipv4_address: 172.16.0.50
 
-# Define the network
-networks:
-  sip-network:
-    ipam:
-      config:
-        - subnet: 172.16.0.0/16
+  # Define the network
+  networks:
+    sip-network:
+      ipam:
+        config:
+          - subnet: 172.16.0.0/16
 
-# Define the volume for PostgreSQL
-volumes:
-  postgres_cloudt:
+  # Define the volume for PostgreSQL
+  volumes:
+    postgres_cloudt:

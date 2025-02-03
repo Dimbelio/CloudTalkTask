@@ -4,6 +4,12 @@
 # Exit on any error
 set -e
 
+# Wait for PostgreSQL to be ready
+until pg_isready -h postgresql_cloudt -U asterisk; do
+    echo "Waiting for PostgreSQL to start..."
+    sleep 1
+done
+
 # Log function to print messages with timestamp
 log() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') - $1"
